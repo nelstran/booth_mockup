@@ -39,17 +39,23 @@ class Booth extends StatelessWidget {
           ),
         // Set color scheme and font styling per widget
         appBarTheme: AppBarTheme(
-            color: mainColor,
-            titleTextStyle: GoogleFonts.robotoMono(
-              color: Colors.white,
-              fontSize: 30,
-            )
+          color: mainColor,
+          titleTextStyle: GoogleFonts.robotoMono(
+            color: Colors.white,
+            fontSize: 30,
+          ),
         ),
         listTileTheme: ListTileThemeData(
-            tileColor: Colors.grey.shade700,
-            titleTextStyle: GoogleFonts.robotoMono(
-              fontSize: 25
-            )
+          tileColor: Colors.grey.shade700,
+          titleTextStyle: GoogleFonts.robotoMono(
+            fontSize: 25
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          indicatorColor: Colors.blue.shade600,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.blue.shade600,
         ),
       ),
       home: const MyHomePage(title: 'Booth'),
@@ -69,12 +75,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Create list of sessions for mock up
   List<SessionObj> sessions = [
-    SessionObj(field: "CS", level: "2420", topic: "A3"),
-    SessionObj(field: "CS", level: "4400", topic: "midterm", maxNum: 4),
+    SessionObj(field: "CS", level: "2420", topic: "A3", currNum: 2, maxNum: 10),
+    SessionObj(field: "WRTG", level: "1010", topic: "Portfolio"),
+    SessionObj(field: "CS", level: "1410", topic: "PA-01", maxNum: 2),
+    SessionObj(field: "CS", level: "4000", topic: "Design Document", currNum: 9, maxNum: 11),
+    SessionObj(field: "WRTG", level: "5000", topic: "Midterm"),
+    SessionObj(field: "ENG", level: "1000", topic: "Q1"),
+    SessionObj(field: "HIST", level: "2420", topic: "Chapter 4", currNum: 2, maxNum: 3),
+    SessionObj(field: "MATH", level: "1400", topic: "Equations"),
+    SessionObj(field: "MATH", level: "4400", topic: "Midterm", maxNum: 4),
     SessionObj(field: "HIST", level: "1010", topic: "Essay 1", currNum: 5, maxNum: 10),
     SessionObj(field: "MATH", level: "2210", topic: "Parametric equations", currNum: 4, maxNum: 5)
   ];
 
+  int currPageIndex = 0;
   @override
   Widget build(BuildContext context) {
 
@@ -94,23 +108,54 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Create list of sessions into UI
+          children: <Widget> [
             for (var i = 0; i < sessions.length; i++)
               sessionTile(context, sessions[i]),
-          ],
-        ),
+          ]
+        )
       ),
-      // This was part of skeleton code
+      // This was part of skeleton code, use for creating a session?
       floatingActionButton: FloatingActionButton(
         onPressed: (){},
         tooltip: 'Increment',
+        backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
         child: const Icon(Icons.add),
       ), 
+      bottomNavigationBar: NavigationBar(
+        onDestinationSelected: (int i){
+          setState(() {
+            currPageIndex = i;
+          });
+        },
+        selectedIndex: currPageIndex,
+        indicatorColor: Theme.of(context).navigationBarTheme.indicatorColor,
+        destinations: const <Widget>[
+          NavigationDestination(
+            selectedIcon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            label: "Home",
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.map),
+            icon: Icon(Icons.map_outlined),
+            label: "Map",
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.data_thresholding),
+            icon: Icon(Icons.data_thresholding_outlined),
+            label: "Data",
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            label: "Profile",
+          ),
+        ],
+      ),
     );
   }
 }
@@ -158,12 +203,11 @@ class ColorRibbons{
   Color addField(String field){
     Random rng = Random();
     if(!fields.containsKey(field)){
-      fields[field] = Color.fromRGBO(
-        rng.nextInt(256),
-        rng.nextInt(256),
-        rng.nextInt(256),
-        1.0
-        );
+      double hue = rng.nextDouble() * 360.0; // Random hue value between 0 and 360
+      double saturation = rng.nextDouble() * 0.4 + 0.6; // Saturation between 0.6 and 1.0
+      double value = rng.nextDouble() * 0.4 + 0.6; // Value (brightness) between 0.6 and 1.0
+
+      fields[field] = HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
     }
     return fields[field];
   }
@@ -193,7 +237,11 @@ Padding sessionTile(BuildContext context, SessionObj session) {
                   )
                 ),
                 child: Container( // This holds both the color ribbon and the listTile itself
-                  height: 80,
+                  // height: hei,
+                  constraints: const BoxConstraints(
+                    minHeight: 80,
+                    maxHeight: 130,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       left: BorderSide(
@@ -203,6 +251,9 @@ Padding sessionTile(BuildContext context, SessionObj session) {
                     )
                   ),
                   child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric( // Center contents inside listTile
+                      vertical: 5,
+                      horizontal: 15), 
                     onTap: () {},
                     shape: const RoundedRectangleBorder( // Round the corners of the listTile
                       borderRadius: BorderRadius.only(
@@ -210,7 +261,7 @@ Padding sessionTile(BuildContext context, SessionObj session) {
                         bottomRight: Radius.circular(15),
                       )
                     ),
-                    // use Theme to easily change styles from one location.
+                    // Use Theme to easily change styles from one location.
                     tileColor: Theme.of(context).listTileTheme.tileColor,
                     leading: const Icon(Icons.person), //Placeholder, thinking about user profile picture
                     title: Text('${session.field} ${session.level}'),
