@@ -1,35 +1,49 @@
+import 'dart:ffi';
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const Booth());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Booth extends StatelessWidget {
+  const Booth({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    var mainColor = Color.fromARGB(255, 44, 94, 168);
     return MaterialApp(
       title: 'Booth',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
         useMaterial3: true,
+        textTheme: GoogleFonts.robotoMonoTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: mainColor,
+          brightness: Brightness.dark
+          ),
+          appBarTheme: AppBarTheme(
+            color: mainColor,
+            titleTextStyle: GoogleFonts.robotoMono(
+              color: Colors.white,
+              fontSize: 30,
+            )
+          ),
+          listTileTheme: ListTileThemeData(
+            tileColor: Colors.grey.shade700,
+            titleTextStyle: GoogleFonts.robotoMono(
+              fontSize: 25
+            )
+          ),
+          cardColor: Colors.black54,
+          canvasColor: Colors.grey,
       ),
       home: const MyHomePage(title: 'Booth'),
     );
@@ -55,62 +69,117 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+  List<SessionObj> sessions = [
+    SessionObj(field: "CS", level: "2420", topic: "A3"),
+    SessionObj(field: "CS", level: "4400", topic: "midterm", maxNum: 4),
+    SessionObj(field: "HIST", level: "1010", topic: "Essay 1", currNum: 5, maxNum: 10)
+  ];
   @override
   Widget build(BuildContext context) {
-
+    sessions.sort((a, b) => a.dist.compareTo(b.dist));
+    
     return Scaffold(
       appBar: AppBar(
-        actionsIconTheme: IconThemeData(
-          size:40,
-          color: Colors.white
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        title: Text(widget.title, style: TextStyle(color: Theme.of(context).canvasColor)),
-        actions: <Widget>[
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text(
+          widget.title,
+          style: Theme.of(context).appBarTheme.titleTextStyle
+          ),
+        actions: const <Widget>[
           Padding(padding: EdgeInsets.only(right:20),
-          child: GestureDetector(
-            onTap:(){},
-            child: const Icon(
-              Icons.settings,
-            ),
-          ))
+            child: Icon(Icons.settings),
+          ),
         ],
       ),
       body: Center(
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (var i = 0; i < 3; i++)
-              Padding(
-                padding: EdgeInsets.all(2),
-                child: ElevatedButton(
-                  onPressed: (){},
-                  child: Text(i.toString())
-                )
-              )
+              sessionTile(context, sessions[i]),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: (){},
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ), 
     );
   }
 }
+
+class SessionObj{
+  final String field;
+  final String level;
+  final String topic;
+  int dist;
+  int currNum;
+  int maxNum;
+
+  SessionObj({
+    required this.field,
+    required this.level,
+    required this.topic,
+    int? dist,
+    int? currNum,
+    int? maxNum,
+    }) 
+    : 
+    dist = dist ?? 10 + Random().nextInt(100 - 10 + 1),
+    currNum = currNum ?? 1,
+    maxNum = maxNum ?? 0;
+
+}
+Padding sessionTile(BuildContext context, SessionObj session) {
+    String roomStr = "";
+    if (session.maxNum != 0){
+      roomStr = "\n[${session.currNum}/${session.maxNum}]";
+    }
+    return Padding(
+              padding: const EdgeInsets.only(
+                top: 5,
+                left: 5,
+                right: 5,
+              ),
+              child:
+              Card(
+                elevation: 2,
+                child: ClipPath(
+                  clipper: ShapeBorderClipper(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
+                  child: Container(
+                    height: 80,
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        left: BorderSide(
+                          color:Colors.green, 
+                          width: 10,
+                        )
+                      )
+                    ),
+                    child: ListTile(
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(15),
+                            bottomRight: Radius.circular(15),
+                          )
+                        ),
+                        tileColor: Theme.of(context).listTileTheme.tileColor,
+                        leading: const Icon(Icons.person),
+                        title: Text('${session.field} ${session.level}'),
+                        subtitle: Text('Working on: ${session.topic}'),
+                        trailing: Text('${session.dist} m$roomStr'),
+                        visualDensity: const VisualDensity(
+                          horizontal:4,
+                        ),
+                      )
+                  ),
+                )
+              )
+            );
+  }
