@@ -51,8 +51,10 @@ class Booth extends StatelessWidget {
             fontSize: 25
           ),
         ),
-        navigationBarTheme: NavigationBarThemeData(
-          indicatorColor: Colors.blue.shade600,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: Colors.blue.shade600,
+          backgroundColor: Colors.grey.shade800,
+          unselectedItemColor: Colors.white
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: Colors.blue.shade600,
@@ -125,33 +127,33 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
         child: const Icon(Icons.add),
       ), 
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int i){
+      // Navigation bar placeholder
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: (int i){
           setState(() {
             currPageIndex = i;
           });
         },
-        selectedIndex: currPageIndex,
-        indicatorColor: Theme.of(context).navigationBarTheme.indicatorColor,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
+        currentIndex: currPageIndex,
+        type: BottomNavigationBarType.fixed, // Need this to change background color
+        selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+        backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+        unselectedIconTheme: Theme.of(context).bottomNavigationBarTheme.unselectedIconTheme,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
             label: "Home",
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.map),
-            icon: Icon(Icons.map_outlined),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
             label: "Map",
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.data_thresholding),
-            icon: Icon(Icons.data_thresholding_outlined),
-            label: "Data",
+          BottomNavigationBarItem(
+            icon: Icon(Icons.data_thresholding),
+            label: "Usage",
           ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.person),
-            icon: Icon(Icons.person_outline),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
             label: "Profile",
           ),
         ],
