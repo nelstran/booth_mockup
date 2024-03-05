@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:ffi';
 import 'dart:math';
 import 'dart:ui';
@@ -10,6 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 void main() {
   runApp(const Booth());
 }
+
+ColorRibbons colorLibrary = ColorRibbons();
 
 class Booth extends StatelessWidget {
   const Booth({super.key});
@@ -77,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     sessions.sort((a, b) => a.dist.compareTo(b.dist));
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -117,6 +120,7 @@ class SessionObj{
   int dist;
   int currNum;
   int maxNum;
+  Color color;
 
   SessionObj({
     required this.field,
@@ -129,8 +133,25 @@ class SessionObj{
     : 
     dist = dist ?? 10 + Random().nextInt(100 - 10 + 1),
     currNum = currNum ?? 1,
-    maxNum = maxNum ?? 0;
+    maxNum = maxNum ?? 0,
+    color = colorLibrary.addField(field);
+}
 
+class ColorRibbons{
+  HashMap fields = HashMap();
+
+  Color addField(String field){
+    Random rng = Random();
+    if(!fields.containsKey(field)){
+      fields[field] = Color.fromRGBO(
+        rng.nextInt(256),
+        rng.nextInt(256),
+        rng.nextInt(256),
+        1.0
+        );
+    }
+    return fields[field];
+  }
 }
 Padding sessionTile(BuildContext context, SessionObj session) {
     String roomStr = "";
@@ -154,10 +175,10 @@ Padding sessionTile(BuildContext context, SessionObj session) {
                   ),
                   child: Container(
                     height: 80,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(
                         left: BorderSide(
-                          color:Colors.green, 
+                          color: session.color, 
                           width: 10,
                         )
                       )
